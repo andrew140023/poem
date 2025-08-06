@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>靜夜詩篇：孤獨之獸</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400&display=swap');
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      /* background-color: #0a0a0a; */
+      font-family: 'Noto Serif TC', serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      transition: background-color 2s ease;
+      background-image: url('https://images.unsplash.com/photo-1488866022504-f2584929ca5f?auto=format&fit=crop&w=1920&q=80');
+      background-size: cover;
+      background-position: center;
+      background-blend-mode: overlay;
+    }
+
+    body::after {
+      content: "";
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      background: radial-gradient(ellipse at center, rgba(0,0,0,0) 50%, rgba(0,0,0,0.7) 100%);
+      z-index: 1;
+      animation: subtle-vignette 10s infinite alternate;
+    }
+    
+    #background-effect {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        z-index: 0;
+        opacity: 0;
+        transition: opacity 3s ease-in-out;
+        background-size: cover;
+        background-position: center;
+    }
+
+    #ripple-container {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        z-index: 0;
+        overflow: hidden;
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        opacity: 0;
+        transition: opacity 2s ease-in-out;
+    }
+
+    #poem-container {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #poem {
+      font-size: 2.2em;
+      text-align: center;
+      padding: 3rem;
+      color: #d1d1d1;
+      opacity: 0;
+      max-width: 85%;
+      line-height: 1.7;
+      transition: opacity 2.5s ease-in-out, transform 2.5s ease-in-out, text-shadow 1s ease;
+      position: relative;
+      z-index: 2;
+      text-shadow: 0 0 8px rgba(200, 200, 200, 0.3);
+      font-weight: 300;
+      transform: translateY(20px);
+    }
+
+    #poem.visible {
+      opacity: 1;
+      transform: translateY(0);
+      animation: gentle-glow 8s infinite alternate;
+    }
+
+    /* 裝飾效果 */
+    #poem.decorated::before, #poem.decorated::after {
+        content: '🍂';
+        position: absolute;
+        font-size: 1.5em;
+        opacity: 0;
+        animation: fade-in-out-rotate 10s infinite alternate;
+    }
+    #poem.decorated::before {
+        top: 0; left: 0;
+        animation-delay: 0s;
+    }
+    #poem.decorated::after {
+        bottom: 0; right: 0;
+        animation-delay: 5s;
+    }
+
+    /* 裂開效果 */
+    #poem.cracked {
+        animation: gentle-glow 8s infinite alternate, crack-text 1.5s forwards;
+    }
+
+    /* 風雨效果 */
+    .raindrop {
+        position: absolute;
+        bottom: 100%;
+        width: 1px;
+        height: 50px;
+        background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.4));
+        animation: fall 1s linear infinite;
+        pointer-events: none;
+        z-index: 5;
+    }
+    .wind {
+        position: absolute;
+        top: 50%;
+        width: 100px;
+        height: 1px;
+        background: rgba(255,255,255,0.2);
+        animation: blow 2s linear infinite;
+        pointer-events: none;
+        z-index: 5;
+    }
+
+    @keyframes fall {
+        to { transform: translateY(100vh); }
+    }
+    @keyframes blow {
+        from { left: -100px; opacity: 0; }
+        50% { opacity: 1; }
+        to { left: 100vw; opacity: 0; }
+    }
+
+    @keyframes crack-text {
+        0% { text-shadow: 0 0 8px rgba(200, 200, 200, 0.3); }
+        50% { text-shadow: 2px 0 1px #f00, -2px 0 1px #0ff; color: #d0d0d0; }
+        100% { text-shadow: 3px 1px 1px #f00, -3px -1px 1px #0ff; color: #c8c8c8; transform: translateY(0) scale(1.01); }
+    }
+
+    @keyframes fade-in-out-rotate {
+        from { opacity: 0; transform: rotate(0deg) scale(0.8); }
+        50% { opacity: 0.3; }
+        to { opacity: 0; transform: rotate(90deg) scale(1.2); }
+    }
+
+    @keyframes gentle-glow {
+      from { text-shadow: 0 0 8px rgba(200, 200, 200, 0.2); }
+      to { text-shadow: 0 0 15px rgba(220, 220, 220, 0.4); }
+    }
+
+    @keyframes subtle-vignette {
+        from { background-color: rgba(0,0,0,0.5); }
+        to { background-color: rgba(0,0,0,0.65); }
+    }
+
+  </style>
+</head>
+<body>
+  <div id="background-effect"></div>
+  <div id="ripple-container"></div>
+  <div id="poem-container">
+      <div id="poem"></div>
+  </div>
+
+  <audio id="bgm" loop>
+    <source src="your-ambient-sound.mp3" type="audio/mpeg">
+    您的瀏覽器不支援音樂播放。
+  </audio>
+
+  <script>
+    const lines = [
+      { text: "孤獨是一匹衰老的獸", effect: "decorated" },
+      { text: "潛伏在我亂石磊磊的心裏", effect: "ripple" },
+      { text: "背上有一種善變的花紋", effect: "decorated" },
+      { text: "那是，我知道，他族類的保護色", effect: "decorated" },
+      { text: "他的眼神蕭索，經常凝視", effect: "eye" },
+      { text: "遙遙的行雲，嚮往", effect: "decorated" },
+      { text: "天上的舒卷和飄流", effect: "decorated" },
+      { text: "低頭沉思，讓風雨隨意鞭打", effect: "rain" },
+      { text: "他委棄的暴猛，他風化的愛", effect: "cracked" }
+    ];
+
+    const poemDiv = document.getElementById("poem");
+    const body = document.body;
+    const backgroundEffect = document.getElementById("background-effect");
+    const rippleContainer = document.getElementById("ripple-container");
+    let currentIndex = 0;
+    let effectContainer;
+    let poemInterval;
+    let transitionTimeout;
+
+    function clearEffects() {
+        poemDiv.className = "";
+        backgroundEffect.style.opacity = 0;
+        rippleContainer.style.opacity = 0;
+        if (effectContainer) {
+            body.removeChild(effectContainer);
+            effectContainer = null;
+        }
+    }
+
+    function createWindAndRain() {
+        effectContainer = document.createElement('div');
+        body.appendChild(effectContainer);
+
+        for(let i=0; i<50; i++) { // 50 raindrops
+            const drop = document.createElement('div');
+            drop.className = 'raindrop';
+            drop.style.left = `${Math.random() * 100}vw`;
+            drop.style.animationDelay = `${Math.random() * 2}s`;
+            drop.style.animationDuration = `${0.5 + Math.random() * 0.5}s`;
+            effectContainer.appendChild(drop);
+        }
+        for(let i=0; i<5; i++) { // 5 wind streaks
+            const wind = document.createElement('div');
+            wind.className = 'wind';
+            wind.style.top = `${Math.random() * 100}vh`;
+            wind.style.animationDelay = `${Math.random() * 2}s`;
+            wind.style.animationDuration = `${1.5 + Math.random()}s`;
+            effectContainer.appendChild(wind);
+        }
+    }
+    
+    function showRippleGif() {
+        // Using a GIF from Giphy. Note: These URLs can sometimes change.
+        rippleContainer.style.backgroundImage = "url('https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExYzM1OXIyZ2FoeWNvbmFlOGVxNGswYnd1N3E0MWJ6YXpsNm5oODJ1cCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/JoISxgsKhbFVK49CAG/giphy.gif')";
+        rippleContainer.style.opacity = 0.15;
+    }
+
+    function showStaringEye() {
+        backgroundEffect.style.backgroundImage = "url('https://images.rawpixel.com/image_png_200/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDI0LTEyL3Jhd3BpeGVsb2ZmaWNlNV9ibGFja19hbmRfd2hpdGVfZHVvdG9uZV9oYWxmdG9uZV9lZmZlY3RfYW5fZXllX183MDBlODkwNS02YjY3LTQxZjktYjNjYy0xNGY5ZGM2MTY0YzNfMS5wbmc.png 200w, https://images.rawpixel.com/image_png_400/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDI0LTEyL3Jhd3BpeGVsb2ZmaWNlNV9ibGFja19hbmRfd2hpdGVfZHVvdG9uZV9oYWxmdG9uZV9lZmZlY3RfYW5fZXllX183MDBlODkwNS02YjY3LTQxZjktYjNjYy0xNGY5ZGM2MTY0YzNfMS5wbmc.png 400w, https://images.rawpixel.com/image_png_600/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDI0LTEyL3Jhd3BpeGVsb2ZmaWNlNV9ibGFja19hbmRfd2hpdGVfZHVvdG9uZV9oYWxmdG9uZV9lZmZlY3RfYW5fZXllX183MDBlODkwNS02YjY3LTQxZjktYjNjYy0xNGY5ZGM2MTY0YzNfMS5wbmc.png 600w, https://images.rawpixel.com/image_png_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDI0LTEyL3Jhd3BpeGVsb2ZmaWNlNV9ibGFja19hbmRfd2hpdGVfZHVvdG9uZV9oYWxmdG9uZV9lZmZlY3RfYW5fZXllX183MDBlODkwNS02YjY3LTQxZjktYjNjYy0xNGY5ZGM2MTY0YzNfMS5wbmc.png 1600w, https://images.rawpixel.com/image_png_1100/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDI0LTEyL3Jhd3BpeGVsb2ZmaWNlNV9ibGFja19hbmRfd2hpdGVfZHVvdG9uZV9oYWxmdG9uZV9lZmZlY3RfYW5fZXllX183MDBlODkwNS02YjY3LTQxZjktYjNjYy0xNGY5ZGM2MTY0YzNfMS5wbmc.png 2400w, https://images.rawpixel.com/image_png_1300/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDI0LTEyL3Jhd3BpeGVsb2ZmaWNlNV9ibGFja19hbmRfd2hpdGVfZHVvdG9uZV9oYWxmdG9uZV9lZmZlY3RfYW5fZXllX183MDBlODkwNS02YjY3LTQxZjktYjNjYy0xNGY5ZGM2MTY0YzNfMS5wbmc.png')";
+        backgroundEffect.style.opacity = 0.5;
+    }
+
+    function updatePoem(manual = false) {
+      if (manual) {
+          clearTimeout(transitionTimeout);
+      }
+
+      poemDiv.classList.remove("visible");
+      clearEffects();
+
+      transitionTimeout = setTimeout(() => {
+        currentIndex = (currentIndex + 1) % lines.length;
+        const line = lines[currentIndex];
+        poemDiv.textContent = line.text;
+
+        switch(line.effect) {
+            case 'rain':
+                createWindAndRain();
+                break;
+            case 'cracked':
+                poemDiv.classList.add('cracked');
+                break;
+            case 'ripple':
+                showRippleGif();
+                poemDiv.classList.add('decorated');
+                break;
+            case 'eye':
+                showStaringEye();
+                poemDiv.classList.add('decorated');
+                break;
+            case 'decorated':
+            default:
+                poemDiv.classList.add('decorated');
+                break;
+        }
+
+        poemDiv.classList.add("visible");
+      }, 2500);
+    }
+
+    function startTimer() {
+        clearInterval(poemInterval);
+        poemInterval = setInterval(updatePoem, 10000);
+    }
+
+    function handleUserInteraction() {
+        const audio = document.getElementById('bgm');
+        if(audio.paused) {
+            audio.play().catch(e => console.log("Audio play failed: " + e));
+        }
+        updatePoem(true);
+        startTimer();
+        // Remove the event listener after the first click to avoid conflicts
+        body.removeEventListener('click', handleUserInteraction);
+        // Add a new listener for subsequent clicks that only advances the poem
+        body.addEventListener('click', () => {
+            updatePoem(true);
+            startTimer();
+        });
+    }
+
+    window.onload = () => {
+      const line = lines[currentIndex];
+      poemDiv.textContent = line.text;
+      poemDiv.classList.add('decorated');
+      poemDiv.classList.add("visible");
+      
+      body.addEventListener('click', handleUserInteraction);
+    };
+
+  </script>
+</body>
+</html>
