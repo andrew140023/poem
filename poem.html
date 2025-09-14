@@ -81,6 +81,13 @@
       transform: translateY(20px);
     }
 
+    #poem .enlarge {
+        font-size: 1.2em;
+        font-weight: 400;
+        display: inline-block;
+        vertical-align: middle;
+    }
+
     #poem.visible {
       opacity: 1;
       transform: translateY(0);
@@ -130,6 +137,50 @@
         pointer-events: none;
         z-index: 5;
     }
+    
+    /* 雲朵效果 */
+    #clouds-container {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        z-index: 0;
+        overflow: hidden;
+        opacity: 0;
+        transition: opacity 3s ease-in-out;
+        pointer-events: none;
+    }
+    .cloud {
+        position: absolute;
+        background-image: url('https://pngimg.com/uploads/cloud/cloud_PNG112251.png');
+        background-size: contain;
+        background-repeat: no-repeat;
+        animation: move-clouds linear infinite;
+        opacity: 0.4;
+    }
+    .cloud.c1 {
+        top: 10%;
+        width: 200px; height: 200px;
+        animation-duration: 80s;
+        animation-delay: -15s;
+    }
+    .cloud.c2 {
+        top: 20%;
+        width: 300px; height: 300px;
+        animation-duration: 100s;
+        animation-delay: -40s;
+        animation-direction: reverse;
+    }
+    .cloud.c3 {
+        top: 5%;
+        width: 150px; height: 150px;
+        animation-duration: 130s;
+        animation-delay: -70s;
+    }
+
+    @keyframes move-clouds {
+        0% { transform: translateX(-350px); }
+        100% { transform: translateX(calc(100vw + 350px)); }
+    }
 
     @keyframes fall {
         to { transform: translateY(100vh); }
@@ -167,6 +218,11 @@
 <body>
   <div id="background-effect"></div>
   <div id="ripple-container"></div>
+  <div id="clouds-container">
+      <div class="cloud c1"></div>
+      <div class="cloud c2"></div>
+      <div class="cloud c3"></div>
+  </div>
   <div id="poem-container">
       <div id="poem"></div>
   </div>
@@ -180,19 +236,20 @@
     const lines = [
       { text: "孤獨是一匹衰老的獸", effect: "decorated" },
       { text: "潛伏在我亂石磊磊的心裏", effect: "ripple" },
-      { text: "背上有一種善變的花紋", effect: "decorated" },
+      { text: "背上有一種善變的花紋", effect: "leopard" },
       { text: "那是，我知道，他族類的保護色", effect: "decorated" },
       { text: "他的眼神蕭索，經常凝視", effect: "eye" },
-      { text: "遙遙的行雲，嚮往", effect: "decorated" },
-      { text: "天上的舒卷和飄流", effect: "decorated" },
+      { text: "遙遙的行雲，嚮往", effect: "clouds" },
+      { text: "天上的舒卷和飄流", effect: "clouds" },
       { text: "低頭沉思，讓風雨隨意鞭打", effect: "rain" },
-      { text: "他委棄的暴猛，他風化的愛", effect: "cracked" }
+      { text: "他委棄的<span class='enlarge'>暴猛</span>，他<span class='enlarge'>風化</span>的愛", effect: "cracked" }
     ];
 
     const poemDiv = document.getElementById("poem");
     const body = document.body;
     const backgroundEffect = document.getElementById("background-effect");
     const rippleContainer = document.getElementById("ripple-container");
+    const cloudsContainer = document.getElementById("clouds-container");
     let currentIndex = 0;
     let effectContainer;
     let poemInterval;
@@ -202,6 +259,7 @@
         poemDiv.className = "";
         backgroundEffect.style.opacity = 0;
         rippleContainer.style.opacity = 0;
+        cloudsContainer.style.opacity = 0;
         if (effectContainer) {
             body.removeChild(effectContainer);
             effectContainer = null;
@@ -241,6 +299,12 @@
         backgroundEffect.style.opacity = 0.5;
     }
 
+    function showLeopardPrint() {
+        backgroundEffect.style.backgroundImage = "url('https://img.88icon.com/download/jpg/202006/9ba7f7d5c02db49e4e948a03d6d8f6be_610_474.jpg!con')";
+        backgroundEffect.style.backgroundSize = '300px';
+        backgroundEffect.style.opacity = 0.25;
+    }
+
     function updatePoem(manual = false) {
       if (manual) {
           clearTimeout(transitionTimeout);
@@ -252,7 +316,7 @@
       transitionTimeout = setTimeout(() => {
         currentIndex = (currentIndex + 1) % lines.length;
         const line = lines[currentIndex];
-        poemDiv.textContent = line.text;
+        poemDiv.innerHTML = line.text;
 
         switch(line.effect) {
             case 'rain':
@@ -267,6 +331,14 @@
                 break;
             case 'eye':
                 showStaringEye();
+                poemDiv.classList.add('decorated');
+                break;
+            case 'leopard':
+                showLeopardPrint();
+                poemDiv.classList.add('decorated');
+                break;
+            case 'clouds':
+                cloudsContainer.style.opacity = 1;
                 poemDiv.classList.add('decorated');
                 break;
             case 'decorated':
@@ -302,7 +374,7 @@
 
     window.onload = () => {
       const line = lines[currentIndex];
-      poemDiv.textContent = line.text;
+      poemDiv.innerHTML = line.text;
       poemDiv.classList.add('decorated');
       poemDiv.classList.add("visible");
       
